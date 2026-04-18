@@ -5,165 +5,465 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Whac-a-Mole</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Hammer cursor ── */
+    :root {
+      --hammer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 40 40'%3E%3Crect x='18' y='16' width='8' height='20' rx='2' fill='%23a0522d'/%3E%3Crect x='8' y='6' width='24' height='14' rx='3' fill='%23555'/%3E%3Crect x='8' y='6' width='24' height='7' rx='3' fill='%23777'/%3E%3C/svg%3E") 48 18, auto;
+      --hammer-swing: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 40 40' style='transform-origin:20px 20px'%3E%3Cg transform='rotate(-40 20 20)'%3E%3Crect x='18' y='16' width='8' height='20' rx='2' fill='%23a0522d'/%3E%3Crect x='8' y='6' width='24' height='14' rx='3' fill='%23555'/%3E%3Crect x='8' y='6' width='24' height='7' rx='3' fill='%23777'/%3E%3C/g%3E%3C/svg%3E") 48 18, auto;
     }
 
     body {
-      background: #2d6a4f;
+      background: #1a1a2e;
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      padding: 24px 16px;
+      padding: 12px 12px 20px;
       color: #fff;
+      cursor: var(--hammer);
+      overflow-x: hidden;
     }
 
+    /* ── Age badge ── */
+    #age-badge {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      background: #f4a261;
+      color: #1a1a2e;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      z-index: 999;
+    }
+
+    body.swinging { cursor: var(--hammer-swing); }
+
+    /* ── Title ── */
     h1 {
-      font-size: 2.8rem;
-      letter-spacing: 2px;
-      text-shadow: 3px 3px 0 #1b4332;
-      margin-bottom: 16px;
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #f4a261, #e76f51);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
     }
 
+    .subtitle {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    /* ── HUD ── */
     .hud {
       display: flex;
-      gap: 48px;
-      margin-bottom: 20px;
-      background: rgba(0,0,0,0.25);
-      padding: 10px 32px;
-      border-radius: 40px;
+      gap: 20px;
+      margin-bottom: 12px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 6px 24px;
+      border-radius: 50px;
     }
 
-    .hud-item {
-      text-align: center;
-    }
+    .hud-item { text-align: center; }
+    .hud-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.55; }
+    .hud-value { font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
+    #timer.urgent { color: #e76f51; animation: pulse 0.5s infinite alternate; }
 
-    .hud-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      opacity: 0.8;
-    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }
 
-    .hud-value {
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1.1;
-    }
-
+    /* ── Grid ── */
     #grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-bottom: 24px;
+      grid-template-columns: repeat(3, 130px);
+      gap: 18px;
+      margin-bottom: 20px;
+      padding: 24px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
+    /* ── Hole ── */
     .hole {
-      width: 120px;
-      height: 120px;
-      background: #1b4332;
+      width: 130px;
+      height: 130px;
+      background: radial-gradient(circle at center, #0a0a18 60%, #15152a);
       border-radius: 50%;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      overflow: hidden;
-      box-shadow: inset 0 6px 14px rgba(0,0,0,0.5), 0 4px 0 #0d2b1f;
-      cursor: default;
       position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 8px 20px rgba(0,0,0,0.8), 0 5px 0 #050510;
     }
 
-    .mole {
-      width: 80px;
-      height: 80px;
-      border-radius: 50% 50% 40% 40%;
-      background: #8b5e3c;
-      position: absolute;
-      bottom: -80px;
-      cursor: pointer;
-      transition: bottom 0.12s ease-out;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    .mole::before {
+    .hole::after {
       content: '';
-      width: 50px;
-      height: 30px;
-      background: #f4a96a;
-      border-radius: 50%;
       position: absolute;
-      bottom: 14px;
+      bottom: 0; left: 0; right: 0;
+      height: 28px;
+      background: #6b4226;
+      border-radius: 0 0 50% 50%;
+      z-index: 2;
     }
 
-    /* eyes */
-    .mole::after {
-      content: '👀';
-      font-size: 22px;
+    /* ── Mole ── */
+    .mole {
+      width: 90px;
+      height: 90px;
+      border-radius: 50% 50% 38% 38%;
       position: absolute;
-      top: 14px;
+      bottom: -90px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: bottom 0.14s cubic-bezier(.22,.68,0,1.2);
+      user-select: none;
+      z-index: 1;
+      cursor: var(--hammer);
     }
 
-    .mole.up {
-      bottom: 8px;
-    }
-
-    .mole.whacked {
-      bottom: 8px;
-      background: #5a3e28;
-      transform: scale(0.85);
+    .mole-body {
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      position: relative;
       pointer-events: none;
     }
 
-    #start-btn {
-      padding: 14px 48px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      background: #f4a261;
-      color: #1b4332;
-      border: none;
-      border-radius: 40px;
+    /* ears — two bumps using one pseudo-element + box-shadow */
+    .mole::before {
+      content: '';
+      position: absolute;
+      width: 22px; height: 18px;
+      background: inherit;
+      border-radius: 50% 50% 20% 20%;
+      top: -10px; left: 12px;
+      z-index: 0;
+      box-shadow: 44px 0 0 currentColor;
+      filter: brightness(0.85);
+    }
+
+    /* light tan face */
+    .mole-body::before {
+      content: '';
+      width: 62px; height: 68px;
+      background: #c8956c;
+      border-radius: 50% 50% 44% 44%;
+      position: absolute;
+      bottom: 0; left: 50%; transform: translateX(-50%);
+    }
+
+    /* two dot eyes */
+    .mole-body::after {
+      content: '';
+      width: 16px; height: 16px;
+      background: #1a0a00;
+      border-radius: 50%;
+      position: absolute;
+      top: 16px; left: calc(50% - 20px);
+      box-shadow: 24px 0 0 #1a0a00;
+    }
+
+    /* nose */
+    .mole-nose {
+      width: 24px; height: 16px;
+      background: #2a1208;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 22px; left: 50%; transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mole-nose::after { content: none; }
+
+    /* ── Crown (3-pt mole) ── */
+    .mole-crown {
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 20px;
+      background: #ffd700;
+      border-radius: 2px 2px 0 0;
+      pointer-events: none;
+      z-index: 6;
+      clip-path: polygon(0% 100%, 0% 40%, 20% 80%, 50% 0%, 80% 80%, 100% 40%, 100% 100%);
+      filter: drop-shadow(0 0 4px #ffd700);
+    }
+
+    /* ── Sunglasses (2-pt mole) ── */
+    .mole-shades {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 54px;
+      height: 16px;
+      pointer-events: none;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .mole-shades::before,
+    .mole-shades::after {
+      content: '';
+      width: 20px;
+      height: 14px;
+      background: #111;
+      border-radius: 4px;
+      border: 2px solid #333;
+    }
+
+    /* bridge between lenses */
+    .mole-shades-bridge {
+      width: 8px;
+      height: 2px;
+      background: #333;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .mole-pts {
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 900;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .mole.up { bottom: 18px; }
+
+    .mole.whacked .mole-body {
+      filter: brightness(0.5) saturate(0.3);
+      transform: scale(0.8);
+      transition: transform 0.1s, filter 0.1s;
+    }
+    .mole.whacked { pointer-events: none; }
+
+    /* ── Bomb button ── */
+    #bomb-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    #bomb-btn {
+      font-size: 2rem;
+      background: none;
+      border: 3px solid #f4a261;
+      border-radius: 16px;
+      padding: 6px 20px;
       cursor: pointer;
-      box-shadow: 0 4px 0 #c97d3a;
+      color: #fff;
+      transition: transform 0.1s, background 0.15s;
+      position: relative;
+    }
+
+    #bomb-btn:hover:not(:disabled) {
+      background: rgba(244,162,97,0.15);
+      transform: scale(1.08);
+    }
+
+    #bomb-btn:disabled {
+      border-color: #444;
+      opacity: 0.35;
+      cursor: var(--hammer);
+    }
+
+    #bomb-count-label {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      letter-spacing: 1px;
+    }
+
+    /* ── Full-screen explosion ── */
+    #explosion {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12rem;
+      opacity: 0;
+    }
+
+    #explosion.boom {
+      animation: explode 0.7s ease-out forwards;
+    }
+
+    @keyframes explode {
+      0%   { opacity: 1; transform: scale(0.3); background: rgba(255,120,0,0);   }
+      25%  { opacity: 1; transform: scale(1.1); background: rgba(255,120,0,0.55);}
+      60%  { opacity: 1; transform: scale(1);   background: rgba(255,60,0,0.35); }
+      100% { opacity: 0; transform: scale(1.3); background: rgba(255,0,0,0);     }
+    }
+
+    /* shake the grid during explosion */
+    #grid.shaking {
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      15%      { transform: translateX(-12px) rotate(-2deg); }
+      35%      { transform: translateX(12px)  rotate(2deg); }
+      55%      { transform: translateX(-8px)  rotate(-1deg); }
+      75%      { transform: translateX(8px)   rotate(1deg); }
+    }
+
+    /* ── Floating score pop ── */
+    .pop {
+      position: fixed;
+      font-size: 1.4rem;
+      font-weight: 900;
+      pointer-events: none;
+      animation: floatUp 0.7s ease-out forwards;
+      z-index: 300;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-60px) scale(1.4); }
+    }
+
+    /* ── Comic hit word ── */
+    .hit-word {
+      position: fixed;
+      font-size: 2.8rem;
+      font-weight: 900;
+      pointer-events: none;
+      z-index: 400;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transform-origin: center;
+      animation: comicPop 0.6s ease-out forwards;
+      -webkit-text-stroke: 2px #1a1a2e;
+      paint-order: stroke fill;
+    }
+    @keyframes comicPop {
+      0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); }
+      40%  { opacity: 1; transform: translate(-50%, -50%) scale(1.3) rotate(6deg); }
+      70%  { opacity: 1; transform: translate(-50%, -50%) scale(0.95) rotate(-3deg); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1) rotate(0deg); }
+    }
+
+    /* ── Start button ── */
+    #start-btn {
+      padding: 14px 52px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #f4a261, #e76f51);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #9b3a20;
       transition: transform 0.1s, box-shadow 0.1s;
     }
+    #start-btn:hover  { transform: translateY(-2px); box-shadow: 0 7px 0 #9b3a20; }
+    #start-btn:active { transform: translateY(3px);  box-shadow: 0 2px 0 #9b3a20; }
+    #start-btn:disabled { background: #444; box-shadow: 0 5px 0 #222; cursor: var(--hammer); }
 
-    #start-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 0 #c97d3a;
+    #pause-btn {
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
     }
+    #pause-btn:hover:not(:disabled) { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+    #pause-btn:disabled { opacity: 0.3; cursor: var(--hammer); }
 
-    #start-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #c97d3a;
+    #btn-row { display: flex; gap: 12px; align-items: center; }
+
+    /* ── Pause overlay ── */
+    #pause-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 400;
+      gap: 10px;
     }
+    #pause-overlay.hidden { display: none; }
+    #pause-overlay h2 { font-size: 3rem; font-weight: 900; color: #f4a261; letter-spacing: 4px; }
+    #pause-overlay p  { opacity: 0.6; font-size: 0.95rem; }
 
-    #start-btn:disabled {
-      background: #aaa;
-      box-shadow: 0 4px 0 #888;
-      cursor: not-allowed;
-      transform: none;
-    }
-
+    /* ── Result ── */
     #result {
       margin-top: 20px;
-      font-size: 1.6rem;
-      font-weight: 700;
-      text-shadow: 2px 2px 0 #1b4332;
+      font-size: 1.5rem;
+      font-weight: 800;
       min-height: 2rem;
       text-align: center;
+      color: #f4a261;
+    }
+
+    /* ── Bomb earned toast ── */
+    #bomb-toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #1e1e3a;
+      border: 2px solid #f4a261;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #f4a261;
+      pointer-events: none;
+      z-index: 500;
+      transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), opacity 0.35s;
+      opacity: 0;
+    }
+
+    #bomb-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
   </style>
 </head>
 <body>
-  <h1>Whac-a-Mole!</h1>
+
+  <!-- Bomb earned toast -->
+  <div id="bomb-toast">💣 Bomb earned!</div>
+
+  <!-- Full-screen explosion overlay -->
+  <div id="explosion">💥</div>
+
+  <h1>Whac-a-Mole</h1>
+  <p class="subtitle">Moles have invaded the city. Whack them back!</p>
 
   <div class="hud">
     <div class="hud-item">
@@ -172,42 +472,88 @@
     </div>
     <div class="hud-item">
       <div class="hud-label">Time</div>
-      <div class="hud-value" id="timer">30</div>
+      <div class="hud-value" id="timer">45</div>
     </div>
+  </div>
+
+  <!-- Bomb button -->
+  <div id="bomb-row">
+    <button id="bomb-btn" disabled title="Explodes all moles on screen">💣</button>
+    <span id="bomb-count-label">Bombs: <strong id="bomb-count">0</strong></span>
   </div>
 
   <div id="grid"></div>
 
-  <button id="start-btn">Start Game</button>
+  <div id="pause-overlay" class="hidden">
+    <h2>PAUSED</h2>
+    <p>Press Space or click Resume to continue</p>
+  </div>
+
+  <div id="btn-row">
+    <button id="start-btn">Start Game</button>
+    <button id="pause-btn" disabled>⏸ Pause</button>
+  </div>
   <div id="result"></div>
 
   <script>
-    const HOLE_COUNT = 9;
-    const GAME_DURATION = 30;
+    const HOLE_COUNT    = 9;
+    const GAME_DURATION = 45;
 
-    const grid = document.getElementById('grid');
-    const scoreEl = document.getElementById('score');
-    const timerEl = document.getElementById('timer');
-    const startBtn = document.getElementById('start-btn');
-    const resultEl = document.getElementById('result');
+    const MOLE_TYPES = [
+      { color: '#8b5e3c', pts: 1 },
+      { color: '#2d6a4f', pts: 2 },
+      { color: '#e76f51', pts: 3 },
+    ];
 
-    let score = 0;
-    let timeLeft = GAME_DURATION;
-    let running = false;
-    let moleTimeout = null;
+    const grid       = document.getElementById('grid');
+    const scoreEl    = document.getElementById('score');
+    const timerEl    = document.getElementById('timer');
+    const startBtn   = document.getElementById('start-btn');
+    const resultEl   = document.getElementById('result');
+    const bombBtn    = document.getElementById('bomb-btn');
+    const bombCountEl= document.getElementById('bomb-count');
+    const explosion  = document.getElementById('explosion');
+    const bombToast  = document.getElementById('bomb-toast');
+    const pauseBtn   = document.getElementById('pause-btn');
+    const pauseOverlay = document.getElementById('pause-overlay');
+
+    let score             = 0;
+    let timeLeft          = GAME_DURATION;
+    let running           = false;
+    let paused            = false;
+    let moleTimeouts      = [];
     let countdownInterval = null;
-    let activeMole = null;
+    let lastIdx           = -1;
+    let bombs             = 0;
+    let molesHit          = 0;
+    const MOLES_PER_BOMB  = 20;
 
-    // Build the grid
+    /* ── Bomb milestone toast ── */
+    let toastTimer = null;
+    function showBombToast() {
+      bombToast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => bombToast.classList.remove('show'), 2000);
+    }
+
+    function updateBombUI() {
+      bombCountEl.textContent = bombs;
+      bombBtn.disabled = !(running && bombs > 0);
+    }
+
+    /* ── Build grid ── */
     const holes = [];
     const moles = [];
+
     for (let i = 0; i < HOLE_COUNT; i++) {
       const hole = document.createElement('div');
       hole.className = 'hole';
 
       const mole = document.createElement('div');
       mole.className = 'mole';
-      mole.addEventListener('click', whack);
+      mole.innerHTML = `<div class="mole-body"><div class="mole-nose"><div class="mole-pts">1</div></div></div>`;
+      mole.dataset.pts = '1';
+      hole.addEventListener('click', (e) => whack(e, mole));
 
       hole.appendChild(mole);
       grid.appendChild(hole);
@@ -215,78 +561,238 @@
       moles.push(mole);
     }
 
-    function randomIndex(exclude) {
-      let idx;
-      do { idx = Math.floor(Math.random() * HOLE_COUNT); } while (idx === exclude);
-      return idx;
-    }
+    /* ── Cursor swing ── */
+    document.addEventListener('mousedown', () => document.body.classList.add('swinging'));
+    document.addEventListener('mouseup',   () => document.body.classList.remove('swinging'));
 
-    function peekMole() {
+    /* ── Spawn mole ── */
+    function spawnMole() {
       if (!running) return;
 
-      const idx = randomIndex(activeMole);
-      activeMole = idx;
+      const available = moles
+        .map((_, i) => i)
+        .filter(i => !moles[i].classList.contains('up') && i !== lastIdx);
+
+      if (available.length === 0) { scheduleNext(); return; }
+
+      const idx  = available[Math.floor(Math.random() * available.length)];
+      lastIdx    = idx;
       const mole = moles[idx];
+
+      const roll = Math.random();
+      const type = roll < 0.70 ? MOLE_TYPES[0]
+                 : roll < 0.90 ? MOLE_TYPES[1]
+                               : MOLE_TYPES[2];
+
+      mole.querySelector('.mole-body').style.background = type.color;
+      mole.querySelector('.mole-pts').textContent       = type.pts;
+      mole.dataset.pts = type.pts;
+
+      // remove any previous accessories
+      mole.querySelectorAll('.mole-crown, .mole-shades').forEach(el => el.remove());
+
+      if (type.pts === 3) {
+        const crown = document.createElement('div');
+        crown.className = 'mole-crown';
+        mole.querySelector('.mole-body').appendChild(crown);
+      } else if (type.pts === 2) {
+        const shades = document.createElement('div');
+        shades.className = 'mole-shades';
+        shades.innerHTML = '<div class="mole-shades-bridge"></div>';
+        mole.querySelector('.mole-body').appendChild(shades);
+      }
+
+      mole.classList.remove('whacked');
       mole.classList.add('up');
 
-      const upDuration = 700 + Math.random() * 600;
-      moleTimeout = setTimeout(() => {
+      const upTime = 1600 + Math.random() * 1200;
+      const t = setTimeout(() => {
         mole.classList.remove('up', 'whacked');
-        activeMole = null;
-        if (running) {
-          const gap = 400 + Math.random() * 400;
-          moleTimeout = setTimeout(peekMole, gap);
-        }
-      }, upDuration);
+        scheduleNext();
+      }, upTime);
+      moleTimeouts.push(t);
     }
 
-    function whack(e) {
+    function scheduleNext() {
       if (!running) return;
-      const mole = e.currentTarget;
+      const t = setTimeout(spawnMole, 350 + Math.random() * 450);
+      moleTimeouts.push(t);
+    }
+
+    /* ── Whack! ── */
+    function whack(e, mole) {
+      if (!running) return;
       if (!mole.classList.contains('up') || mole.classList.contains('whacked')) return;
 
       mole.classList.add('whacked');
-      score++;
-      scoreEl.textContent = score;
+      awardPoints(parseInt(mole.dataset.pts, 10), e.clientX, e.clientY);
+      showHitWord(e.clientX, e.clientY);
+
+      molesHit++;
+      if (molesHit % MOLES_PER_BOMB === 0) {
+        bombs++;
+        updateBombUI();
+        showBombToast();
+      }
     }
 
+    const HIT_WORDS  = ['POW!', 'BLAM!', 'SLAM!', 'WHAM!', 'BAM!', 'KAPOW!'];
+    const HIT_COLORS = ['#f4a261', '#e76f51', '#52b788', '#ffd166', '#ef476f'];
+
+    function showHitWord(x, y) {
+      const word = HIT_WORDS[Math.floor(Math.random() * HIT_WORDS.length)];
+      const color = HIT_COLORS[Math.floor(Math.random() * HIT_COLORS.length)];
+      const el = document.createElement('div');
+      el.className   = 'hit-word';
+      el.textContent = word;
+      el.style.color = color;
+      el.style.left  = x + 'px';
+      el.style.top   = y + 'px';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+
+    function awardPoints(pts, x, y) {
+      score += pts;
+      scoreEl.textContent = score;
+
+      const pop = document.createElement('div');
+      pop.className    = 'pop';
+      pop.textContent  = '+' + pts;
+      pop.style.color  = pts === 3 ? '#e76f51' : pts === 2 ? '#52b788' : '#f4a261';
+      pop.style.left   = x + 'px';
+      pop.style.top    = y + 'px';
+      document.body.appendChild(pop);
+      pop.addEventListener('animationend', () => pop.remove());
+    }
+
+    /* ── BOMB ── */
+    bombBtn.addEventListener('click', () => {
+      if (!running || bombs <= 0) return;
+
+      bombs--;
+      localStorage.setItem('wam_bombs', bombs);
+      updateBombUI();
+
+      // Collect all up moles and their screen positions before whacking
+      const upMoles = moles.filter(m => m.classList.contains('up') && !m.classList.contains('whacked'));
+
+      // Trigger explosion overlay
+      explosion.classList.remove('boom');
+      void explosion.offsetWidth; // force reflow to restart animation
+      explosion.classList.add('boom');
+
+      // Shake the grid
+      grid.classList.remove('shaking');
+      void grid.offsetWidth;
+      grid.classList.add('shaking');
+      grid.addEventListener('animationend', () => grid.classList.remove('shaking'), { once: true });
+
+      // Award points for every visible mole with a pop near the grid centre
+      const gridRect = grid.getBoundingClientRect();
+      const cx = gridRect.left + gridRect.width  / 2;
+      const cy = gridRect.top  + gridRect.height / 2;
+
+      upMoles.forEach((mole, i) => {
+        mole.classList.add('whacked');
+        const pts = parseInt(mole.dataset.pts, 10);
+        // Scatter the pops across the grid area
+        const px = cx + (Math.random() - 0.5) * gridRect.width  * 0.8;
+        const py = cy + (Math.random() - 0.5) * gridRect.height * 0.8;
+        setTimeout(() => awardPoints(pts, px, py), i * 80);
+      });
+    });
+
+    /* ── Start / End ── */
     function startGame() {
-      score = 0;
+      score    = 0;
       timeLeft = GAME_DURATION;
-      scoreEl.textContent = '0';
-      timerEl.textContent = GAME_DURATION;
+      scoreEl.textContent  = '0';
+      timerEl.textContent  = GAME_DURATION;
+      timerEl.classList.remove('urgent');
       resultEl.textContent = '';
-      running = true;
+      running  = true;
+      paused   = false;
       startBtn.disabled = true;
+      pauseBtn.disabled = false;
+      pauseBtn.textContent = '⏸ Pause';
+      updateBombUI();
 
-      // Reset all moles
       moles.forEach(m => m.classList.remove('up', 'whacked'));
-      activeMole = null;
+      moleTimeouts.forEach(clearTimeout);
+      moleTimeouts = [];
+      lastIdx   = -1;
+      molesHit  = 0;
 
-      // Start spawning moles
-      const gap = 300 + Math.random() * 300;
-      moleTimeout = setTimeout(peekMole, gap);
+      spawnMole();
+      const t = setTimeout(spawnMole, 600);
+      moleTimeouts.push(t);
 
-      // Start countdown
       countdownInterval = setInterval(() => {
         timeLeft--;
         timerEl.textContent = timeLeft;
-        if (timeLeft <= 0) endGame();
+        if (timeLeft <= 10) timerEl.classList.add('urgent');
+        if (timeLeft <= 0)  endGame();
       }, 1000);
     }
 
     function endGame() {
       running = false;
-      clearTimeout(moleTimeout);
+      moleTimeouts.forEach(clearTimeout);
+      moleTimeouts = [];
       clearInterval(countdownInterval);
-
       moles.forEach(m => m.classList.remove('up', 'whacked'));
-      activeMole = null;
+      pauseBtn.disabled = true;
+      pauseOverlay.classList.add('hidden');
+      updateBombUI();
 
-      resultEl.textContent = `Game over! Final score: ${score} 🎉`;
+      const msg = score >= 30 ? 'Amazing! The city is saved!'
+                : score >= 15 ? 'Nice work, mole fighter!'
+                              : 'The moles won this time...';
+      resultEl.textContent = `${msg}  Final score: ${score}`;
       startBtn.disabled = false;
       startBtn.textContent = 'Play Again';
     }
+
+    /* ── Pause / Resume ── */
+    function pauseGame() {
+      if (!running || paused) return;
+      paused = true;
+      clearInterval(countdownInterval);
+      moleTimeouts.forEach(clearTimeout);
+      moleTimeouts = [];
+      moles.forEach(m => m.classList.remove('up'));
+      pauseOverlay.classList.remove('hidden');
+      pauseBtn.textContent = '▶ Resume';
+    }
+
+    function resumeGame() {
+      if (!running || !paused) return;
+      paused = false;
+      pauseOverlay.classList.add('hidden');
+      pauseBtn.textContent = '⏸ Pause';
+      spawnMole();
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerEl.textContent = timeLeft;
+        if (timeLeft <= 10) timerEl.classList.add('urgent');
+        if (timeLeft <= 0)  endGame();
+      }, 1000);
+    }
+
+    function togglePause() {
+      if (!running) return;
+      paused ? resumeGame() : pauseGame();
+    }
+
+    pauseBtn.addEventListener('click', togglePause);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePause();
+      }
+    });
 
     startBtn.addEventListener('click', startGame);
   </script>

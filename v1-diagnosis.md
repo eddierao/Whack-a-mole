@@ -12,7 +12,7 @@ Rate each area from 1 (poor) to 5 (excellent).
 | Controls / Feel  | 1/5          | felt pretty lame                     |
 | Scoring          | 1/5          | lame                                 |
 | Difficulty       | 1/5          | very easy                            |
-| Look & Feel      | 1/5          | Not relly fun                        |
+| Look & Feel      | 1/5          | Not really fun                       |
 
 ---
 
@@ -20,9 +20,9 @@ Rate each area from 1 (poor) to 5 (excellent).
 
 Things AI got right that you want to keep.
 
-1.
-2.
-3.
+1. the game works and dose not lag.
+2. I want the game to keep the mole design and the hammer design
+3. I want the game to keep the story starting and the story ending.
 
 ---
 
@@ -30,9 +30,9 @@ Things AI got right that you want to keep.
 
 Things that do not work well.
 
-1.
-2.
-3.
+1. The game can have different speed to make it easier or harder
+2. Add a leader board to make it more competitive
+3. Add different worlds to make the back round more interesting
 
 ---
 
@@ -40,7 +40,7 @@ Things that do not work well.
 
 Things that feel like AI just picked a "default" option (no personality, no theme, no real design decisions).
 
-1.
+1. everything
 2.
 3.
 
@@ -50,9 +50,9 @@ Things that feel like AI just picked a "default" option (no personality, no them
 
 Things you expected but AI did not include.
 
-1.
-2.
-3.
+1. ai did not included different levels
+2. different skins
+3. not very catchy
 
 ---
 
@@ -60,7 +60,7 @@ Things you expected but AI did not include.
 
 Complete this sentence:
 
-> "The biggest problem with this game is \_\_\_."
+> "The biggest problem with this game is no challenge \\."
 
 ---
 
@@ -68,11 +68,11 @@ Complete this sentence:
 
 Answer each question specifically. Avoid "everyone."
 
-**Who is going to play this game?**
+**Who is going to play this game?**my little brother = 6 years old
 
-**When and where would they play it?**
+**When and where would they play it?** at home and play dates
 
-**What do they care about?**
+**What do they care about?** the fun and getting a high score also trying to beat someone else.
 
 ---
 
@@ -80,7 +80,7 @@ Answer each question specifically. Avoid "everyone."
 
 Fill in the blanks:
 
-> "Version 2 of my Whack-a-Mole game should feel like **_ for _** who need \_\_\_."
+> "Version 2 of my Whack-a-Mole game should feel like a challenging, hard competitive and fun to play games in the age range of 12 to 6 years old ass."
 
 ---
 
@@ -88,12 +88,21 @@ Fill in the blanks:
 
 Fill in at least 5 items.
 
-| Element             | Keep, Change, or Delete? | Why? |
-| ------------------- | ------------------------ | ---- |
-| Score counter       |                          |      |
-| Timer               |                          |      |
-| Mole speed          |                          |      |
-| Background / colors |                          |      |
-| Grid layout         |                          |      |
-|                     |                          |      |
-|                     |                          |      |
+| Element             | Keep, Change, or Delete? | Why?                                      |
+| ------------------- | ------------------------ | ----------------------------------------- |
+| Score counter       | keep                     | the score is accurate                     |
+| Timer               | keep                     | the time is reasonable                    |
+| Mole speed          | change                   | to slow easy to hit                       |
+| Background / colors | change                   | green is not very cool                    |
+| Grid layout         | keep                     | three by three is a good area for hitting |
+|                     |                          |                                           |
+|                     |                          |                                           |
+
+Add:
+
+- powerups
+- multipliers to the score
+- points lost when you click a fake mole
+- story intro: moles have overrun the city
+- moles have different colours, the colours show how many points each mole is worth
+- The entire app should look like a big mole with a crown on top
