@@ -74,7 +74,7 @@ Answer each question specifically. Avoid "everyone."
 
 **What do they care about?** the fun and getting a high score also trying to beat someone else.
 
----
+---e
 
 ## Redesign Direction Statement
 
