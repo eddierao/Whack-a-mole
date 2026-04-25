@@ -1060,9 +1060,6 @@
       mole.dataset.pts = '1';
       hole.addEventListener('click', (e) => {
         if (!running) {
-          difficulty = 'easy';
-          document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
-          document.querySelector('.diff-btn[data-diff="easy"]').classList.add('active');
           startGame();
         }
         whack(e, mole);
