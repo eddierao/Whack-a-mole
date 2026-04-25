@@ -320,6 +320,8 @@
       z-index: 6;
     }
 
+    body.idle .mole-pts { visibility: hidden; }
+
     .mole.up { bottom: 18px; }
 
     .mole.whacked .mole-body {
@@ -791,7 +793,7 @@
     }
   </style>
 </head>
-<body>
+<body class="idle">
 
   <!-- Age badge -->
   <div id="age-badge">🎮 Ages 9–99</div>
@@ -1047,7 +1049,15 @@
       mole.className = 'mole';
       mole.innerHTML = `<div class="mole-body"><div class="mole-nose"><div class="mole-pts">1</div></div></div>`;
       mole.dataset.pts = '1';
-      hole.addEventListener('click', (e) => whack(e, mole));
+      hole.addEventListener('click', (e) => {
+        if (!running) {
+          difficulty = 'easy';
+          document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+          document.querySelector('.diff-btn[data-diff="easy"]').classList.add('active');
+          startGame();
+        }
+        whack(e, mole);
+      });
 
       hole.appendChild(mole);
       grid.appendChild(hole);
@@ -1055,11 +1065,26 @@
       moles.push(mole);
     }
 
-    /* ── Cursor swing ── */
-    document.addEventListener('mousedown',  () => document.body.classList.add('swinging'));
-    document.addEventListener('mouseup',    () => document.body.classList.remove('swinging'));
-    document.addEventListener('touchstart', () => document.body.classList.add('swinging'),    { passive: true });
-    document.addEventListener('touchend',   () => document.body.classList.remove('swinging'), { passive: true });
+    /* ── Cursor swing — minimum 150ms so the animation is always visible ── */
+    let swingEnd = 0;
+    let swingTimer = null;
+    function startSwing() {
+      clearTimeout(swingTimer);
+      document.body.classList.add('swinging');
+      swingEnd = Date.now() + 150;
+    }
+    function endSwing() {
+      const remaining = swingEnd - Date.now();
+      if (remaining > 0) {
+        swingTimer = setTimeout(() => document.body.classList.remove('swinging'), remaining);
+      } else {
+        document.body.classList.remove('swinging');
+      }
+    }
+    document.addEventListener('mousedown',  startSwing);
+    document.addEventListener('mouseup',    endSwing);
+    document.addEventListener('touchstart', startSwing, { passive: true });
+    document.addEventListener('touchend',   endSwing,   { passive: true });
 
     /* ── Spawn mole ── */
     function spawnMole() {
@@ -1206,6 +1231,7 @@
     /* ── Start / End ── */
     function startGame() {
       stopIdleAnimation();
+      document.body.classList.remove('idle');
       score    = 0;
       timeLeft = GAME_DURATION;
       scoreEl.textContent  = '0';
@@ -1256,6 +1282,7 @@
       startBtn.disabled = false;
       startBtn.textContent = 'Play Again';
       stopMusic();
+      document.body.classList.add('idle');
       startIdleAnimation();
     }
 
@@ -1278,7 +1305,6 @@
       clearInterval(countdownInterval);
       moleTimeouts.forEach(clearTimeout);
       moleTimeouts = [];
-      moles.forEach(m => m.classList.remove('up'));
       updatePauseStatus();
       pauseOverlay.classList.remove('hidden');
       pauseBtn.textContent = '▶ Resume';
@@ -1291,6 +1317,7 @@
       pauseOverlay.classList.add('hidden');
       pauseBtn.textContent = '⏸ Pause';
       startMusic();
+      moles.forEach(m => m.classList.remove('up'));
       spawnMole();
       countdownInterval = setInterval(() => {
         timeLeft--;
