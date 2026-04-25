@@ -566,6 +566,25 @@
     .pet-name  { font-size: 0.7rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
     .pet-req   { font-size: 0.6rem; opacity: 0.55; }
 
+    .pet-bar-wrap {
+      width: 100%;
+      height: 5px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .pet-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 99px;
+      transition: width 0.3s ease;
+    }
+
+    .pet-card[data-pet="octo"]    .pet-bar { background: #a855f7; }
+    .pet-card[data-pet="xen"]     .pet-bar { background: #22d3ee; }
+    .pet-card[data-pet="inferno"] .pet-bar { background: #f97316; }
+
     /* ── Pet unlock toast ── */
     #pet-toast {
       position: fixed;
@@ -741,7 +760,7 @@
 <body>
 
   <!-- Age badge -->
-  <div id="age-badge">🎮 Ages 7–11</div>
+  <div id="age-badge">🎮 Ages 9–99</div>
 
   <!-- Mute button -->
   <button id="mute-btn" title="Toggle music">🔊</button>
@@ -779,17 +798,20 @@
         <div class="pet-card" data-pet="octo">
           <span class="pet-icon">🐙</span>
           <span class="pet-name">Octo</span>
-          <span class="pet-req">25 hits</span>
+          <div class="pet-bar-wrap"><div class="pet-bar" id="bar-octo"></div></div>
+          <span class="pet-req" id="req-octo">0 / 25</span>
         </div>
         <div class="pet-card" data-pet="xen">
           <span class="pet-icon">👾</span>
           <span class="pet-name">Xen</span>
-          <span class="pet-req">50 hits</span>
+          <div class="pet-bar-wrap"><div class="pet-bar" id="bar-xen"></div></div>
+          <span class="pet-req" id="req-xen">0 / 50</span>
         </div>
         <div class="pet-card" data-pet="inferno">
           <span class="pet-icon">🔥</span>
           <span class="pet-name">Inferno</span>
-          <span class="pet-req">100 hits</span>
+          <div class="pet-bar-wrap"><div class="pet-bar" id="bar-inferno"></div></div>
+          <span class="pet-req" id="req-inferno">0 / 100</span>
         </div>
       </div>
 
@@ -847,7 +869,7 @@
 
   <div id="pause-overlay" class="hidden">
     <h2>PAUSED</h2>
-    <p>Press Space or click Resume to continue</p>
+    <p>Click anywhere or press Space to resume</p>
   </div>
 
   <script>
@@ -919,13 +941,25 @@
       document.body.classList.toggle('pet-octo',    hasOcto || hasInferno);
     }
 
+    function updatePetBars(hits) {
+      for (const p of PETS) {
+        const pct = Math.min(hits / p.hits * 100, 100);
+        document.getElementById(`bar-${p.pet}`).style.width = pct + '%';
+        if (!unlockedPets.has(p.pet)) {
+          document.getElementById(`req-${p.pet}`).textContent = `${Math.min(hits, p.hits)} / ${p.hits}`;
+        }
+      }
+    }
+
     function checkPetMilestones(hits) {
+      updatePetBars(hits);
       for (const p of PETS) {
         if (hits === p.hits) {
           unlockedPets.add(p.pet);
           applyPetEffects();
           const card = document.querySelector(`.pet-card[data-pet="${p.pet}"]`);
           card.classList.add('unlocked');
+          document.getElementById(`req-${p.pet}`).textContent = '✓ Unlocked!';
           petToast.textContent       = p.label;
           petToast.style.borderColor = p.color;
           petToast.style.color       = p.color;
@@ -940,6 +974,10 @@
       unlockedPets.clear();
       applyPetEffects();
       document.querySelectorAll('.pet-card').forEach(c => c.classList.remove('unlocked'));
+      for (const p of PETS) {
+        document.getElementById(`bar-${p.pet}`).style.width = '0%';
+        document.getElementById(`req-${p.pet}`).textContent = `0 / ${p.hits}`;
+      }
     }
 
     /* ── Bomb milestone toast ── */
@@ -1211,6 +1249,8 @@
     }
 
     pauseBtn.addEventListener('click', togglePause);
+    pauseOverlay.addEventListener('click', resumeGame);
+    pauseOverlay.addEventListener('touchstart', resumeGame, { passive: true });
 
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space') {
