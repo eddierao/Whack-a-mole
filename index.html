@@ -498,21 +498,55 @@
     .diff-btn[data-diff="medium"].active { border-color: #ffd166; background: rgba(255,209,102,0.2); color: #ffd166; }
     .diff-btn[data-diff="hard"].active   { border-color: #e76f51; background: rgba(231,111,81,0.2);  color: #e76f51; }
 
-    /* ── Pause overlay ── */
+    /* ── Pause overlay — compact status card ── */
     #pause-overlay {
       position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.65);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15,10,30,0.92);
+      border: 2px solid #f4a261;
+      border-radius: 18px;
+      padding: 22px 32px 18px;
+      z-index: 400;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      z-index: 400;
       gap: 10px;
+      min-width: 240px;
+      box-shadow: 0 0 40px rgba(244,162,97,0.4);
+      backdrop-filter: blur(6px);
     }
     #pause-overlay.hidden { display: none; }
-    #pause-overlay h2 { font-size: 3rem; font-weight: 900; color: #f4a261; letter-spacing: 4px; }
-    #pause-overlay p  { opacity: 0.6; font-size: 0.95rem; }
+    #pause-overlay h2 {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #f4a261;
+      letter-spacing: 4px;
+      margin: 0 0 4px;
+    }
+    #pause-status {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+    .ps-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding-bottom: 4px;
+    }
+    .ps-row:last-child { border-bottom: none; }
+    .ps-label { opacity: 0.55; }
+    .ps-val   { font-weight: 700; color: #f4a261; }
+    #pause-overlay p {
+      opacity: 0.45;
+      font-size: 0.78rem;
+      margin: 4px 0 0;
+    }
 
     /* ── Result ── */
     #result {
@@ -868,8 +902,16 @@
   </div><!-- /game-layout -->
 
   <div id="pause-overlay" class="hidden">
-    <h2>PAUSED</h2>
-    <p>Click anywhere or press Space to resume</p>
+    <h2>⏸ PAUSED</h2>
+    <div id="pause-status">
+      <div class="ps-row"><span class="ps-label">Score</span><span class="ps-val" id="ps-score">0</span></div>
+      <div class="ps-row"><span class="ps-label">Time left</span><span class="ps-val" id="ps-time">4:00</span></div>
+      <div class="ps-row"><span class="ps-label">Moles hit</span><span class="ps-val" id="ps-hits">0</span></div>
+      <div class="ps-row"><span class="ps-label">Difficulty</span><span class="ps-val" id="ps-diff">Easy</span></div>
+      <div class="ps-row"><span class="ps-label">Pets</span><span class="ps-val" id="ps-pets">none yet</span></div>
+      <div class="ps-row"><span class="ps-label">Bombs</span><span class="ps-val" id="ps-bombs">0</span></div>
+    </div>
+    <p>Click here or press Space to resume</p>
   </div>
 
   <script>
@@ -1163,6 +1205,7 @@
 
     /* ── Start / End ── */
     function startGame() {
+      stopIdleAnimation();
       score    = 0;
       timeLeft = GAME_DURATION;
       scoreEl.textContent  = '0';
@@ -1213,9 +1256,22 @@
       startBtn.disabled = false;
       startBtn.textContent = 'Play Again';
       stopMusic();
+      startIdleAnimation();
     }
 
     /* ── Pause / Resume ── */
+    function updatePauseStatus() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      document.getElementById('ps-score').textContent  = score;
+      document.getElementById('ps-time').textContent   = `${mins}:${String(secs).padStart(2,'0')}`;
+      document.getElementById('ps-hits').textContent   = molesHit;
+      document.getElementById('ps-diff').textContent   = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+      const petNames = [...unlockedPets].map(p => p.charAt(0).toUpperCase() + p.slice(1));
+      document.getElementById('ps-pets').textContent   = petNames.length ? petNames.join(', ') : 'none yet';
+      document.getElementById('ps-bombs').textContent  = bombs;
+    }
+
     function pauseGame() {
       if (!running || paused) return;
       paused = true;
@@ -1223,6 +1279,7 @@
       moleTimeouts.forEach(clearTimeout);
       moleTimeouts = [];
       moles.forEach(m => m.classList.remove('up'));
+      updatePauseStatus();
       pauseOverlay.classList.remove('hidden');
       pauseBtn.textContent = '▶ Resume';
       stopMusic();
@@ -1354,6 +1411,65 @@
     });
 
     startBtn.addEventListener('click', startGame);
+
+    /* ── Idle preview animation ── */
+    let idleTimeouts = [];
+
+    function dressIdleMole(mole) {
+      const roll = Math.random();
+      const type = roll < 0.55 ? MOLE_TYPES[0]
+                 : roll < 0.80 ? MOLE_TYPES[1]
+                               : MOLE_TYPES[2];
+      mole.querySelector('.mole-body').style.background = type.color;
+      mole.querySelector('.mole-pts').textContent       = type.pts;
+      mole.querySelectorAll('.mole-crown, .mole-shades').forEach(el => el.remove());
+      if (type.pts === 3) {
+        const crown = document.createElement('div');
+        crown.className = 'mole-crown';
+        mole.querySelector('.mole-body').appendChild(crown);
+      } else if (type.pts === 2) {
+        const shades = document.createElement('div');
+        shades.className = 'mole-shades';
+        shades.innerHTML = '<div class="mole-shades-bridge"></div>';
+        mole.querySelector('.mole-body').appendChild(shades);
+      }
+    }
+
+    // Only 4 of the 9 holes participate in the idle preview
+    const IDLE_HOLES = [0, 2, 4, 7];
+
+    function scheduleIdleMole(idx) {
+      const delay = 5400 + Math.random() * 9600;
+      const t = setTimeout(() => {
+        if (running) return;
+        const mole = moles[idx];
+        dressIdleMole(mole);
+        mole.classList.remove('whacked');
+        mole.classList.add('up');
+        const upTime = 4800 + Math.random() * 4200;
+        const t2 = setTimeout(() => {
+          if (running) return;
+          mole.classList.remove('up');
+          scheduleIdleMole(idx);
+        }, upTime);
+        idleTimeouts.push(t2);
+      }, delay);
+      idleTimeouts.push(t);
+    }
+
+    function startIdleAnimation() {
+      idleTimeouts.forEach(clearTimeout);
+      idleTimeouts = [];
+      IDLE_HOLES.forEach(i => scheduleIdleMole(i));
+    }
+
+    function stopIdleAnimation() {
+      idleTimeouts.forEach(clearTimeout);
+      idleTimeouts = [];
+      moles.forEach(m => m.classList.remove('up'));
+    }
+
+    startIdleAnimation();
   </script>
 </body>
 </html>
