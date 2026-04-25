@@ -44,6 +44,21 @@
 
     body.swinging { cursor: var(--hammer-swing); }
 
+    #mute-btn {
+      position: fixed;
+      top: 44px;
+      right: 14px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      color: #fff;
+      font-size: 1rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      z-index: 999;
+    }
+    #mute-btn:hover { background: rgba(255,255,255,0.2); }
+
     /* ── Title ── */
     h1 {
       font-size: 1.8rem;
@@ -64,15 +79,41 @@
       letter-spacing: 1px;
     }
 
+    /* ── Game layout ── */
+    #game-layout {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: center;
+      width: 100%;
+    }
+
+    #sidebar {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      min-width: 140px;
+      padding-top: 4px;
+    }
+
+    #game-centre {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
     /* ── HUD ── */
     .hud {
       display: flex;
-      gap: 20px;
-      margin-bottom: 12px;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 0;
       background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.12);
-      padding: 6px 24px;
-      border-radius: 50px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      width: 100%;
     }
 
     .hud-item { text-align: center; }
@@ -262,9 +303,9 @@
     /* ── Bomb button ── */
     #bomb-row {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
+      gap: 6px;
     }
 
     #bomb-btn {
@@ -403,6 +444,31 @@
 
     #btn-row { display: flex; gap: 12px; align-items: center; }
 
+    /* ── Difficulty buttons ── */
+    #diff-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .diff-btn {
+      padding: 8px 22px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 50px;
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .diff-btn:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+    .diff-btn.active { border-color: #f4a261; background: rgba(244,162,97,0.2); color: #f4a261; }
+    .diff-btn[data-diff="easy"].active   { border-color: #52b788; background: rgba(82,183,136,0.2); color: #52b788; }
+    .diff-btn[data-diff="medium"].active { border-color: #ffd166; background: rgba(255,209,102,0.2); color: #ffd166; }
+    .diff-btn[data-diff="hard"].active   { border-color: #e76f51; background: rgba(231,111,81,0.2);  color: #e76f51; }
+
     /* ── Pause overlay ── */
     #pause-overlay {
       position: fixed;
@@ -428,6 +494,104 @@
       text-align: center;
       color: #f4a261;
     }
+
+    /* ── Pets row ── */
+    #pets-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pet-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 8px 14px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.3s;
+      filter: grayscale(1);
+      opacity: 0.35;
+      min-width: 72px;
+    }
+
+    .pet-card.unlocked {
+      filter: none;
+      opacity: 1;
+      animation: petPop 0.5s cubic-bezier(.22,.68,0,1.3);
+    }
+
+    .pet-card[data-pet="octo"].unlocked   { border-color: #a855f7; box-shadow: 0 0 12px #a855f755; }
+    .pet-card[data-pet="xen"].unlocked    { border-color: #22d3ee; box-shadow: 0 0 12px #22d3ee55; }
+    .pet-card[data-pet="inferno"].unlocked{ border-color: #f97316; box-shadow: 0 0 12px #f9731655; }
+
+    @keyframes petPop {
+      0%   { transform: scale(0.5) rotate(-10deg); }
+      60%  { transform: scale(1.2) rotate(5deg); }
+      100% { transform: scale(1)   rotate(0deg); }
+    }
+
+    .pet-icon  { font-size: 2rem; line-height: 1; }
+    .pet-name  { font-size: 0.7rem; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+    .pet-req   { font-size: 0.6rem; opacity: 0.55; }
+
+    /* ── Pet unlock toast ── */
+    #pet-toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #1e1e3a;
+      border: 2px solid #a855f7;
+      border-radius: 50px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: #fff;
+      pointer-events: none;
+      z-index: 500;
+      transition: transform 0.35s cubic-bezier(.22,.68,0,1.2), opacity 0.35s;
+      opacity: 0;
+      white-space: nowrap;
+    }
+    #pet-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Hints box ── */
+    #hints {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 0.7rem;
+      line-height: 1.6;
+    }
+
+    .hint-title {
+      font-weight: 900;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: #f4a261;
+      margin-bottom: 6px;
+    }
+
+    .hint-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: 0.8;
+    }
+
+    /* ── Pet active effects ── */
+    body.pet-xen .hole,
+    body.pet-inferno .hole {
+      transform: scale(1.22);
+      transition: transform 0.4s cubic-bezier(.22,.68,0,1.3);
+    }
+    body.pet-xen .hole { box-shadow: inset 0 8px 20px rgba(0,0,0,0.8), 0 5px 0 #050510, 0 0 14px #22d3ee88; }
+    body.pet-inferno .hole { box-shadow: inset 0 8px 20px rgba(0,0,0,0.8), 0 5px 0 #050510, 0 0 14px #f9731688; }
 
     /* ── Bomb earned toast ── */
     #bomb-toast {
@@ -456,6 +620,15 @@
 </head>
 <body>
 
+  <!-- Age badge -->
+  <div id="age-badge">🎮 Ages 7–11</div>
+
+  <!-- Mute button -->
+  <button id="mute-btn" title="Toggle music">🔊</button>
+
+  <!-- Pet unlock toast -->
+  <div id="pet-toast"></div>
+
   <!-- Bomb earned toast -->
   <div id="bomb-toast">💣 Bomb earned!</div>
 
@@ -465,39 +638,96 @@
   <h1>Whac-a-Mole</h1>
   <p class="subtitle">Moles have invaded the city. Whack them back!</p>
 
-  <div class="hud">
-    <div class="hud-item">
-      <div class="hud-label">Score</div>
-      <div class="hud-value" id="score">0</div>
-    </div>
-    <div class="hud-item">
-      <div class="hud-label">Time</div>
-      <div class="hud-value" id="timer">45</div>
-    </div>
-  </div>
+  <div id="game-layout">
 
-  <!-- Bomb button -->
-  <div id="bomb-row">
-    <button id="bomb-btn" disabled title="Explodes all moles on screen">💣</button>
-    <span id="bomb-count-label">Bombs: <strong id="bomb-count">0</strong></span>
-  </div>
+    <!-- Sidebar: everything except the grid -->
+    <div id="sidebar">
 
-  <div id="grid"></div>
+      <div class="hud">
+        <div class="hud-item">
+          <div class="hud-label">Score</div>
+          <div class="hud-value" id="score">0</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">Time</div>
+          <div class="hud-value" id="timer">240</div>
+        </div>
+      </div>
+
+      <!-- Pets -->
+      <div id="pets-row">
+        <div class="pet-card" data-pet="octo">
+          <span class="pet-icon">🐙</span>
+          <span class="pet-name">Octo</span>
+          <span class="pet-req">25 hits</span>
+        </div>
+        <div class="pet-card" data-pet="xen">
+          <span class="pet-icon">👾</span>
+          <span class="pet-name">Xen</span>
+          <span class="pet-req">50 hits</span>
+        </div>
+        <div class="pet-card" data-pet="inferno">
+          <span class="pet-icon">🔥</span>
+          <span class="pet-name">Inferno</span>
+          <span class="pet-req">100 hits</span>
+        </div>
+      </div>
+
+      <!-- Bomb -->
+      <div id="bomb-row">
+        <button id="bomb-btn" disabled title="Explodes all moles on screen">💣</button>
+        <span id="bomb-count-label">Bombs: <strong id="bomb-count">0</strong></span>
+      </div>
+
+      <!-- Difficulty -->
+      <div id="diff-row">
+        <button class="diff-btn active" data-diff="easy">Easy</button>
+        <button class="diff-btn" data-diff="medium">Medium</button>
+        <button class="diff-btn" data-diff="hard">Hard</button>
+      </div>
+
+      <!-- Start / Pause -->
+      <div id="btn-row">
+        <button id="start-btn">Start</button>
+        <button id="pause-btn" disabled>⏸</button>
+      </div>
+
+      <div id="result"></div>
+
+      <!-- Hints -->
+      <div id="hints">
+        <div class="hint-title">? How to Play</div>
+        <ul class="hint-list">
+          <li>🖱️ Click a hole to whack a mole</li>
+          <li>🟤 Brown = 1 pt</li>
+          <li>🟢 Green = 2 pts (sunglasses)</li>
+          <li>🔴 Red = 3 pts (crown)</li>
+          <li>💣 Bomb = blast all moles on screen</li>
+          <li>🐙 Octo (25 hits) = moles slow down</li>
+          <li>👾 Xen (50 hits) = bigger hit area</li>
+          <li>🔥 Inferno (100 hits) = both!</li>
+          <li>Every 20 hits = earn a bomb</li>
+          <li>⏸ Space bar = pause</li>
+        </ul>
+      </div>
+
+    </div><!-- /sidebar -->
+
+    <!-- Centre: just the grid -->
+    <div id="game-centre">
+      <div id="grid"></div>
+    </div>
+
+  </div><!-- /game-layout -->
 
   <div id="pause-overlay" class="hidden">
     <h2>PAUSED</h2>
     <p>Press Space or click Resume to continue</p>
   </div>
 
-  <div id="btn-row">
-    <button id="start-btn">Start Game</button>
-    <button id="pause-btn" disabled>⏸ Pause</button>
-  </div>
-  <div id="result"></div>
-
   <script>
     const HOLE_COUNT    = 9;
-    const GAME_DURATION = 45;
+    const GAME_DURATION = 240;
 
     const MOLE_TYPES = [
       { color: '#8b5e3c', pts: 1 },
@@ -517,6 +747,22 @@
     const pauseBtn   = document.getElementById('pause-btn');
     const pauseOverlay = document.getElementById('pause-overlay');
 
+    const DIFFICULTY = {
+      easy:   { upMin: 1400, upRange: 800,  gapMin: 500, gapRange: 400 },
+      medium: { upMin: 700,  upRange: 500,  gapMin: 280, gapRange: 250 },
+      hard:   { upMin: 350,  upRange: 250,  gapMin: 120, gapRange: 150 },
+    };
+    let difficulty = 'easy';
+
+    document.querySelectorAll('.diff-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (running) return;
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        difficulty = btn.dataset.diff;
+      });
+    });
+
     let score             = 0;
     let timeLeft          = GAME_DURATION;
     let running           = false;
@@ -527,6 +773,49 @@
     let bombs             = 0;
     let molesHit          = 0;
     const MOLES_PER_BOMB  = 20;
+
+    const PETS = [
+      { pet: 'octo',    hits: 25,  label: '🐙 Octo unlocked!',    color: '#a855f7' },
+      { pet: 'xen',     hits: 50,  label: '👾 Xen unlocked!',     color: '#22d3ee' },
+      { pet: 'inferno', hits: 100, label: '🔥 Inferno unlocked!', color: '#f97316' },
+    ];
+
+    const petToast = document.getElementById('pet-toast');
+    let petToastTimer = null;
+
+    const unlockedPets = new Set();
+
+    function applyPetEffects() {
+      const hasOcto    = unlockedPets.has('octo');
+      const hasXen     = unlockedPets.has('xen');
+      const hasInferno = unlockedPets.has('inferno');
+      document.body.classList.toggle('pet-xen',     hasXen || hasInferno);
+      document.body.classList.toggle('pet-inferno',  hasInferno);
+      document.body.classList.toggle('pet-octo',    hasOcto || hasInferno);
+    }
+
+    function checkPetMilestones(hits) {
+      for (const p of PETS) {
+        if (hits === p.hits) {
+          unlockedPets.add(p.pet);
+          applyPetEffects();
+          const card = document.querySelector(`.pet-card[data-pet="${p.pet}"]`);
+          card.classList.add('unlocked');
+          petToast.textContent       = p.label;
+          petToast.style.borderColor = p.color;
+          petToast.style.color       = p.color;
+          petToast.classList.add('show');
+          clearTimeout(petToastTimer);
+          petToastTimer = setTimeout(() => petToast.classList.remove('show'), 2500);
+        }
+      }
+    }
+
+    function resetPets() {
+      unlockedPets.clear();
+      applyPetEffects();
+      document.querySelectorAll('.pet-card').forEach(c => c.classList.remove('unlocked'));
+    }
 
     /* ── Bomb milestone toast ── */
     let toastTimer = null;
@@ -605,7 +894,9 @@
       mole.classList.remove('whacked');
       mole.classList.add('up');
 
-      const upTime = 1600 + Math.random() * 1200;
+      const d = DIFFICULTY[difficulty];
+      const slowBonus = (unlockedPets.has('octo') || unlockedPets.has('inferno')) ? 1.7 : 1;
+      const upTime = (d.upMin + Math.random() * d.upRange) * slowBonus;
       const t = setTimeout(() => {
         mole.classList.remove('up', 'whacked');
         scheduleNext();
@@ -615,7 +906,8 @@
 
     function scheduleNext() {
       if (!running) return;
-      const t = setTimeout(spawnMole, 350 + Math.random() * 450);
+      const d = DIFFICULTY[difficulty];
+      const t = setTimeout(spawnMole, d.gapMin + Math.random() * d.gapRange);
       moleTimeouts.push(t);
     }
 
@@ -629,6 +921,7 @@
       showHitWord(e.clientX, e.clientY);
 
       molesHit++;
+      checkPetMilestones(molesHit);
       if (molesHit % MOLES_PER_BOMB === 0) {
         bombs++;
         updateBombUI();
@@ -717,12 +1010,14 @@
       pauseBtn.disabled = false;
       pauseBtn.textContent = '⏸ Pause';
       updateBombUI();
+      startMusic();
 
       moles.forEach(m => m.classList.remove('up', 'whacked'));
       moleTimeouts.forEach(clearTimeout);
       moleTimeouts = [];
       lastIdx   = -1;
       molesHit  = 0;
+      resetPets();
 
       spawnMole();
       const t = setTimeout(spawnMole, 600);
@@ -752,6 +1047,7 @@
       resultEl.textContent = `${msg}  Final score: ${score}`;
       startBtn.disabled = false;
       startBtn.textContent = 'Play Again';
+      stopMusic();
     }
 
     /* ── Pause / Resume ── */
@@ -764,6 +1060,7 @@
       moles.forEach(m => m.classList.remove('up'));
       pauseOverlay.classList.remove('hidden');
       pauseBtn.textContent = '▶ Resume';
+      stopMusic();
     }
 
     function resumeGame() {
@@ -771,6 +1068,7 @@
       paused = false;
       pauseOverlay.classList.add('hidden');
       pauseBtn.textContent = '⏸ Pause';
+      startMusic();
       spawnMole();
       countdownInterval = setInterval(() => {
         timeLeft--;
@@ -792,6 +1090,100 @@
         e.preventDefault();
         togglePause();
       }
+    });
+
+    /* ── Background Music ── */
+    const muteBtn = document.getElementById('mute-btn');
+    let audioCtx   = null;
+    let musicTimer = null;
+    let muted      = false;
+
+    // BPM 80 → BEAT = 0.75s  |  60 beats × 0.75s = 45 seconds exactly
+    const BEAT = 60 / 80;
+
+    // [frequency Hz, beats] — 60 beats total = 45 s
+    const MELODY = [
+      // Phrase 1
+      [392.00,1],[440.00,1],[523.25,2],[440.00,1],[392.00,1],[329.63,2],
+      [392.00,1],[440.00,1],[523.25,1],[587.33,1],[523.25,2],[440.00,2],
+      // Phrase 2
+      [659.25,1],[587.33,1],[523.25,2],[587.33,1],[659.25,1],[783.99,2],
+      [659.25,1],[587.33,1],[523.25,1],[440.00,1],[392.00,2],[329.63,2],
+      // Phrase 3
+      [523.25,1],[659.25,1],[783.99,2],[659.25,1],[523.25,1],[587.33,2],
+      [659.25,1],[783.99,1],[880.00,1],[783.99,1],[659.25,2],[523.25,2],
+      // Phrase 4 — big finish
+      [392.00,1],[440.00,1],[523.25,1],[659.25,1],[587.33,2],[523.25,1],[587.33,1],[659.25,4],
+    ];
+
+    // Bass — repeating every 4 beats (15 repeats × 4 beats = 60 beats)
+    const BASS_PATTERN = [
+      [130.81,4],[174.61,4],[196.00,4],[196.00,4],
+      [130.81,4],[174.61,4],[196.00,4],[196.00,4],
+      [130.81,4],[174.61,4],[196.00,4],[196.00,4],
+      [130.81,4],[174.61,4],[196.00,4],
+    ];
+
+    function initAudio() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AC();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function scheduleNote(freq, when, dur, vol, type = 'triangle') {
+      const osc  = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, when);
+      gain.gain.linearRampToValueAtTime(vol, when + 0.03);
+      gain.gain.linearRampToValueAtTime(0, when + dur * 0.85);
+      osc.start(when);
+      osc.stop(when + dur);
+    }
+
+    function startMusic() {
+      if (muted) return;
+      initAudio();
+      const start = audioCtx.currentTime + 0.05;
+
+      const melodyLen = MELODY.reduce((s, [, b]) => s + b, 0) * BEAT;
+      const bassLen   = BASS_PATTERN.reduce((s, [, b]) => s + b, 0) * BEAT;
+      const loops     = Math.ceil(GAME_DURATION / melodyLen);
+      const bassLoops = Math.ceil(GAME_DURATION / bassLen);
+
+      let t = start;
+      for (let i = 0; i < loops; i++) {
+        for (const [freq, beats] of MELODY) {
+          scheduleNote(freq, t, beats * BEAT, 0.10);
+          t += beats * BEAT;
+        }
+      }
+
+      let bt = start;
+      for (let i = 0; i < bassLoops; i++) {
+        for (const [freq, beats] of BASS_PATTERN) {
+          scheduleNote(freq, bt, beats * BEAT * 0.7, 0.06, 'sine');
+          bt += beats * BEAT;
+        }
+      }
+    }
+
+    function stopMusic() {
+      clearTimeout(musicTimer);
+      musicTimer = null;
+      if (audioCtx) { audioCtx.close(); audioCtx = null; }
+    }
+
+    muteBtn.addEventListener('click', () => {
+      muted = !muted;
+      muteBtn.textContent = muted ? '🔇' : '🔊';
+      if (muted) stopMusic();
+      else if (running && !paused) startMusic();
     });
 
     startBtn.addEventListener('click', startGame);
