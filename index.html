@@ -99,8 +99,37 @@
 
     #game-centre {
       display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #right-panel {
+      display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 14px;
+      width: 140px;
+    }
+
+    #qr-side {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #qr-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      border: 3px solid rgba(255,255,255,0.15);
+    }
+
+    #qr-label {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      letter-spacing: 1px;
     }
 
     /* ── HUD ── */
@@ -593,6 +622,97 @@
     body.pet-xen .hole { box-shadow: inset 0 8px 20px rgba(0,0,0,0.8), 0 5px 0 #050510, 0 0 14px #22d3ee88; }
     body.pet-inferno .hole { box-shadow: inset 0 8px 20px rgba(0,0,0,0.8), 0 5px 0 #050510, 0 0 14px #f9731688; }
 
+    /* ══════════════════════════════
+       MOBILE  (≤ 650px)
+    ══════════════════════════════ */
+    @media (max-width: 650px) {
+      body { padding: 8px 8px 24px; cursor: auto; }
+      body.swinging { cursor: auto; }
+
+      h1 { font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 4px; }
+      .subtitle { font-size: 0.65rem; margin-bottom: 8px; }
+
+      /* Stack everything vertically */
+      #game-layout {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      /* Sidebar goes horizontal + wrapping on mobile */
+      #sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        min-width: unset;
+        width: 100%;
+        gap: 8px;
+        padding-top: 0;
+      }
+
+      /* HUD horizontal */
+      .hud {
+        flex-direction: row;
+        gap: 24px;
+        padding: 8px 20px;
+        width: auto;
+      }
+      .hud-value { font-size: 1.3rem; }
+
+      /* Smaller grid */
+      #grid {
+        grid-template-columns: repeat(3, 88px);
+        gap: 10px;
+        padding: 14px;
+        margin-bottom: 0;
+      }
+
+      .hole { width: 88px; height: 88px; }
+      .hole::after { height: 18px; }
+
+      .mole { width: 64px; height: 64px; bottom: -64px; }
+      .mole.up { bottom: 10px; }
+      .mole::before { width: 16px; height: 14px; top: -7px; left: 8px; box-shadow: 32px 0 0 currentColor; }
+      .mole-body::before { width: 44px; height: 48px; }
+      .mole-body::after { width: 11px; height: 11px; top: 12px; left: calc(50% - 14px); box-shadow: 17px 0 0 #1a0a00; }
+      .mole-nose { width: 17px; height: 11px; bottom: 14px; }
+      .mole-crown { width: 30px; height: 14px; top: -15px; }
+      .mole-shades { width: 38px; height: 12px; top: 13px; }
+      .mole-shades::before, .mole-shades::after { width: 14px; height: 10px; }
+      .mole-pts { font-size: 0.55rem; }
+
+      /* Pets compact */
+      #pets-row { gap: 6px; }
+      .pet-card { padding: 5px 8px; min-width: 56px; }
+      .pet-icon { font-size: 1.4rem; }
+      .pet-name { font-size: 0.6rem; }
+      .pet-req  { font-size: 0.5rem; }
+
+      /* Bomb row */
+      #bomb-row { gap: 8px; }
+      #bomb-btn { font-size: 1.4rem; padding: 4px 12px; }
+
+      /* Diff + btn rows */
+      #diff-row { gap: 6px; }
+      .diff-btn { padding: 6px 12px; font-size: 0.75rem; }
+      #btn-row { gap: 8px; }
+      #start-btn { padding: 10px 24px; font-size: 0.9rem; }
+      #pause-btn { padding: 10px 16px; font-size: 0.9rem; }
+
+      /* Hide right panel on mobile */
+      #right-panel { display: none; }
+
+      /* Result */
+      #result { font-size: 1rem; text-align: center; }
+
+      /* Badges */
+      #age-badge { font-size: 0.6rem; padding: 3px 7px; top: 8px; right: 8px; }
+      #mute-btn  { top: 32px; right: 8px; font-size: 0.85rem; padding: 3px 7px; }
+
+      /* Hit word smaller */
+      .hit-word { font-size: 1.8rem; }
+    }
+
     /* ── Bomb earned toast ── */
     #bomb-toast {
       position: fixed;
@@ -694,28 +814,33 @@
 
       <div id="result"></div>
 
-      <!-- Hints -->
-      <div id="hints">
-        <div class="hint-title">? How to Play</div>
-        <ul class="hint-list">
-          <li>🖱️ Click a hole to whack a mole</li>
-          <li>🟤 Brown = 1 pt</li>
-          <li>🟢 Green = 2 pts (sunglasses)</li>
-          <li>🔴 Red = 3 pts (crown)</li>
-          <li>💣 Bomb = blast all moles on screen</li>
-          <li>🐙 Octo (25 hits) = moles slow down</li>
-          <li>👾 Xen (50 hits) = bigger hit area</li>
-          <li>🔥 Inferno (100 hits) = both!</li>
-          <li>Every 20 hits = earn a bomb</li>
-          <li>⏸ Space bar = pause</li>
-        </ul>
-      </div>
-
     </div><!-- /sidebar -->
 
-    <!-- Centre: just the grid -->
+    <!-- Centre: grid + right panel -->
     <div id="game-centre">
       <div id="grid"></div>
+      <div id="right-panel">
+        <div id="qr-side">
+          <img id="qr-img" src="qrcode.png" alt="QR code" />
+          <p id="qr-label">Scan to play!</p>
+        </div>
+        <!-- Hints -->
+        <div id="hints">
+          <div class="hint-title">? How to Play</div>
+          <ul class="hint-list">
+            <li>🖱️ Click a hole to whack a mole</li>
+            <li>🟤 Brown = 1 pt</li>
+            <li>🟢 Green = 2 pts (sunglasses)</li>
+            <li>🔴 Red = 3 pts (crown)</li>
+            <li>💣 Bomb = blast all moles on screen</li>
+            <li>🐙 Octo (25 hits) = moles slow down</li>
+            <li>👾 Xen (50 hits) = bigger hit area</li>
+            <li>🔥 Inferno (100 hits) = both!</li>
+            <li>Every 20 hits = earn a bomb</li>
+            <li>⏸ Space bar = pause</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
   </div><!-- /game-layout -->
@@ -851,8 +976,10 @@
     }
 
     /* ── Cursor swing ── */
-    document.addEventListener('mousedown', () => document.body.classList.add('swinging'));
-    document.addEventListener('mouseup',   () => document.body.classList.remove('swinging'));
+    document.addEventListener('mousedown',  () => document.body.classList.add('swinging'));
+    document.addEventListener('mouseup',    () => document.body.classList.remove('swinging'));
+    document.addEventListener('touchstart', () => document.body.classList.add('swinging'),    { passive: true });
+    document.addEventListener('touchend',   () => document.body.classList.remove('swinging'), { passive: true });
 
     /* ── Spawn mole ── */
     function spawnMole() {
