@@ -621,6 +621,15 @@
     .pet-card[data-pet="xen"]     .pet-bar { background: #22d3ee; }
     .pet-card[data-pet="inferno"] .pet-bar { background: #f97316; }
 
+    /* ── Idle demo: pets fully visible, no progress, bomb available ── */
+    body.idle .pet-card               { filter: none; opacity: 1; animation: none; }
+    body.idle .pet-card[data-pet="octo"]    { border-color: #a855f7; box-shadow: 0 0 12px #a855f755; }
+    body.idle .pet-card[data-pet="xen"]     { border-color: #22d3ee; box-shadow: 0 0 12px #22d3ee55; }
+    body.idle .pet-card[data-pet="inferno"] { border-color: #f97316; box-shadow: 0 0 12px #f9731655; }
+    body.idle .pet-bar-wrap           { display: none; }
+    body.idle .pet-req                { display: none; }
+    body.idle #bomb-btn:disabled      { border-color: #f4a261; opacity: 1; cursor: pointer; }
+
     /* ── Pet unlock toast ── */
     #pet-toast {
       position: fixed;
